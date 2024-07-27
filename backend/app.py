@@ -13,6 +13,9 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 TOKEN = 'your_google_access_token'  # Replace with your actual access token
 GOOGLE_APPLICATION_CREDENTIALS = 'path_to_your_service_account_key.json'  # Path to your service account key file
 
+# Setup logging
+logging.basicConfig(level=logging.DEBUG)
+
 # MongoDB connection setup
 client = MongoClient('mongodb://localhost:27017/')
 db = client['reimbursement_db']
@@ -58,6 +61,8 @@ def ocr():
         data = request.get_json()
         image_data = data['image'].split(',')[1]
 
+        logging.debug(f"Received image data for OCR with length: {len(image_data)}")
+
         client = vision.ImageAnnotatorClient.from_service_account_json(GOOGLE_APPLICATION_CREDENTIALS)
 
         image = vision.Image(content=io.BytesIO(base64.b64decode(image_data)))
@@ -65,6 +70,8 @@ def ocr():
         response = client.text_detection(image=image)
         text_annotations = response.text_annotations
         text = parse_text_annotations(text_annotations)
+        logging.debug(f"OCR Text: {text}")
+        
         or_number = parse_or_number(text)
         date_time = parse_date_time(text)
         amount_paid = parse_amount_paid(text)
@@ -78,7 +85,7 @@ def ocr():
             'amount_paid': amount_paid
         })
     except Exception as e:
-        print(f"Error processing image: {str(e)}")
+        logging.error(f"Error processing image: {str(e)}")
         return jsonify({'error': 'Error processing the image.'}), 500
 
 @app.route('/submit', methods=['POST'])
@@ -94,6 +101,8 @@ def submit():
         pid = data['pid']
         image = request.files['image']
 
+        logging.debug("Received form data for submission")
+
         client = vision.ImageAnnotatorClient.from_service_account_json(GOOGLE_APPLICATION_CREDENTIALS)
 
         content = image.read()
@@ -102,6 +111,8 @@ def submit():
         response = client.text_detection(image=image)
         text_annotations = response.text_annotations
         text = parse_text_annotations(text_annotations)
+        logging.debug(f"OCR Text: {text}")
+
         or_number = parse_or_number(text)
         date_time = parse_date_time(text)
         amount_paid = parse_amount_paid(text)
@@ -140,14 +151,15 @@ def submit():
 
         return jsonify({'status': 'success', 'updatedRange': result['updates']['updatedRange']})
     except Exception as e:
-        print(f"Error submitting data: {str(e)}")
+        logging.error(f"Error submitting data: {str(e)}")
         return jsonify({'error': 'Error submitting the data.'}), 500
 
 def get_or_create_spreadsheet(service, title, name, id_number, position, division, team_head):
     try:
         response = service.spreadsheets().get(spreadsheetId=title).execute()
         return response['spreadsheetId']
-    except:
+    except Exception as e:
+        logging.debug(f"Spreadsheet not found, creating a new one: {str(e)}")
         spreadsheet_id = create_spreadsheet(service, title)
         create_template(service, spreadsheet_id, name, id_number, position, division, team_head)
         return spreadsheet_id
