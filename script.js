@@ -30,12 +30,16 @@ document.getElementById('receipt').addEventListener('change', function(event) {
             })
             .then(response => response.json())
             .then(data => {
-                preview.innerHTML = `
-                    <b>OR Number:</b> ${data.or_number}<br>
-                    <b>Date:</b> ${data.date}<br>
-                    <b>Time:</b> ${data.time}<br>
-                    <b>Amount Paid:</b> ${data.amount_paid}<br>
-                `;
+                if (data.error) {
+                    preview.textContent = 'Error processing the image.';
+                } else {
+                    preview.innerHTML = `
+                        <b>OR Number:</b> ${data.or_number}<br>
+                        <b>Date:</b> ${data.date}<br>
+                        <b>Time:</b> ${data.time}<br>
+                        <b>Amount Paid:</b> ${data.amount_paid}<br>
+                    `;
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -59,7 +63,11 @@ document.getElementById('submitButton').addEventListener('click', async function
     });
 
     const result = await response.json();
-    alert(`Status: ${result.status}, Updated Range: ${result.updatedRange}`);
+    if (result.error) {
+        alert('Error submitting the data.');
+    } else {
+        alert(`Status: ${result.status}, Updated Range: ${result.updatedRange}`);
+    }
 });
 
 function dataURItoBlob(dataURI) {
