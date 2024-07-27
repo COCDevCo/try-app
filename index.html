@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reimbursement Form</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Reimbursement Form</h1>
+    </header>
+    <div class="container">
+        <form id="reimbursementForm" enctype="multipart/form-data">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br>
+
+            <label for="idNumber">ID Number:</label>
+            <input type="text" id="idNumber" name="idNumber" required><br>
+
+            <label for="position">Position:</label>
+            <input type="text" id="position" name="position" required><br>
+
+            <label for="division">Division:</label>
+            <input type="text" id="division" name="division" required><br>
+
+            <label for="teamHead">Team Head:</label>
+            <input type="text" id="teamHead" name="teamHead" required><br>
+
+            <label for="month">Month:</label>
+            <input type="month" id="month" name="month" required><br>
+
+            <input type="hidden" id="imageData" name="imageData"><br>
+
+            <button type="button" id="captureButton">Scan Receipt</button>
+            <input type="file" accept="image/*" capture="environment" id="receipt" name="receipt" style="display:none;" required><br>
+        </form>
+
+        <h2>Preview</h2>
+        <pre id="preview"></pre>
+        <button type="button" id="submitButton">Submit</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
